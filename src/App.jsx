@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
-import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { BooksPage } from './pages/BooksPage'
 import { LoginPage } from './pages/LoginPage'
@@ -24,8 +23,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
@@ -39,7 +37,6 @@ export default function App() {
             <Route path="*" element={<Navigate to="/books" replace />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
     </ThemeProvider>
   )
 }
