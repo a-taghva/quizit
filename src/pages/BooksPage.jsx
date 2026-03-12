@@ -54,7 +54,7 @@ export function BooksPage() {
     >
       {books.map((book) => (
         <Card key={book.id} sx={{ width: '100%', maxWidth: 600 }}>
-          <CardActionArea onClick={() => navigate(`/book/${book.id}/topics`)}>
+          <CardActionArea onClick={() => navigate(`/book/${book.id}`)}>
             <CardContent>
               <Typography variant="h6" component="h2">
                 {book.title}
