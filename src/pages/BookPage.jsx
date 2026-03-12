@@ -16,13 +16,17 @@ export function BookPage() {
   const navigate = useNavigate()
   const [topics, setTopics] = useState([])
   const [statusByTopic, setStatusByTopic] = useState({})
+  const [favoritesCount, setFavoritesCount] = useState(0)
+  const [mistakesCount, setMistakesCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
-      const [topicsRes, statusRes] = await Promise.all([
+      const [topicsRes, statusRes, favoritesRes, mistakesRes] = await Promise.all([
         supabase.from('topics').select('id, title, total_questions').eq('book_id', bookId).order('id'),
         supabase.from('status').select('topic_id, question_index').eq('book_id', bookId),
+        supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('book_id', bookId),
+        supabase.from('mistakes').select('*', { count: 'exact', head: true }).eq('book_id', bookId),
       ])
 
       if (!topicsRes.error) {
@@ -32,6 +36,12 @@ export function BookPage() {
         const map = {}
         ;(statusRes.data ?? []).forEach((r) => { map[r.topic_id] = r.question_index })
         setStatusByTopic(map)
+      }
+      if (!favoritesRes.error) {
+        setFavoritesCount(favoritesRes.count ?? 0)
+      }
+      if (!mistakesRes.error) {
+        setMistakesCount(mistakesRes.count ?? 0)
       }
       setLoading(false)
     }
@@ -64,6 +74,24 @@ export function BookPage() {
         gap: 3,
       }}
     >
+      <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 600, justifyContent: 'space-between' }}>
+        <Card sx={{ flex: 1 }}>
+          <CardContent>
+            <Typography variant="h6" component="h2">
+              Favorites
+            </Typography>
+            <Typography color="text.secondary">{favoritesCount}</Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ flex: 1 }}>
+          <CardContent>
+            <Typography variant="h6" component="h2">
+              Mistakes
+            </Typography>
+            <Typography color="text.secondary">{mistakesCount}</Typography>
+          </CardContent>
+        </Card>
+      </Box>
       {topics.map((topic) => {
         const answered = statusByTopic[topic.id] ?? 0
         const total = topic.total_questions || 1
