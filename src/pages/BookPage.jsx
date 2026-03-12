@@ -22,6 +22,7 @@ export function BookPage() {
         .from('topics')
         .select('id, title, total_questions')
         .eq('book_id', bookId)
+        .order('id')
 
       if (!error) {
         setTopics(data ?? [])
