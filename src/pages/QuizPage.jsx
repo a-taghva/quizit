@@ -172,7 +172,7 @@ export function QuizPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: i === currentIndex ? 'primary.main' : combinedMistakes[i] ? 'error.light' : allAnswered[i] ? 'success.light' : 'action.hover',
+              bgcolor: i === currentIndex ? 'primary.main' : combinedMistakes[i] ? 'rgba(255, 195, 185)' : allAnswered[i] ? 'rgba(180, 225, 190)' : 'action.hover',
               color: i === currentIndex ? 'primary.contrastText' : 'text.primary',
               cursor: 'pointer',
               border: i === currentIndex ? 2 : 0,
@@ -217,7 +217,7 @@ export function QuizPage() {
                   sx={{
                     justifyContent: 'flex-start',
                     textTransform: 'none',
-                    bgcolor: isWrong ? 'error.light' : isCorrect ? 'success.light' : undefined,
+                    bgcolor: isWrong ? 'rgba(255, 195, 185)' : isCorrect ? 'rgba(180, 225, 190)' : undefined,
                   }}
                 >
                   {opt}
