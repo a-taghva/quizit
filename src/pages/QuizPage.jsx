@@ -56,9 +56,9 @@ export function QuizPage() {
         })
         setMistakes(m)
 
-        const idx = statusRes.data?.question_index ?? 0
-        setStatusIndex(idx)
-        setCurrentIndex(idx)
+        const statusRow = statusRes.data
+        setStatusIndex(statusRow ? statusRow.question_index : null)
+        setCurrentIndex(statusRow?.question_index ?? 0)
       }
       setLoading(false)
     }
@@ -79,12 +79,17 @@ export function QuizPage() {
   }, [currentIndex])
 
   const handleBookmark = async () => {
-    if (!user?.id) return
-    setStatusIndex(currentIndex)
-    await supabase.from('status').upsert(
-      { topic_id: topicId, book_id: bookId, question_index: currentIndex, user_id: user.id },
-      { onConflict: 'topic_id, user_id' }
-    )
+    const alreadyBookmarked = statusIndex === currentIndex
+    if (alreadyBookmarked) {
+      setStatusIndex(null)
+      await supabase.from('status').delete().eq('topic_id', topicId)
+    } else {
+      setStatusIndex(currentIndex)
+      await supabase.from('status').upsert(
+        { user_id: user.id, topic_id: topicId, book_id: bookId, question_index: currentIndex },
+        { onConflict: 'user_id,topic_id' }
+      )
+    }
   }
 
   const isBookmarked = statusIndex === currentIndex
