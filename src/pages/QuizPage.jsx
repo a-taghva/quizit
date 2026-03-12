@@ -38,7 +38,7 @@ export function QuizPage() {
         supabase.from('favorites').select('question_id').eq('topic_id', topicId),
         supabase.from('mistakes').select('question_index, user_answer, correct_answer').eq('topic_id', topicId),
         user?.id
-          ? supabase.from('status').select('question_index').eq('user_id', user.id).eq('topic_id', topicId).maybeSingle()
+          ? supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle()
           : Promise.resolve({ data: null, error: null }),
       ])
 
@@ -63,7 +63,7 @@ export function QuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [topicId, user?.id])
+  })
 
   const combinedMistakes = { ...mistakes, ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -76,14 +76,14 @@ export function QuizPage() {
 
   useEffect(() => {
     scrollToActive(currentIndex)
-  }, [currentIndex])
+  })
 
   const handleBookmark = async () => {
     if (!user?.id) return
     setStatusIndex(currentIndex)
     await supabase.from('status').upsert(
-      { user_id: user.id, topic_id: topicId, question_index: currentIndex },
-      { onConflict: 'user_id,topic_id' }
+      { topic_id: topicId, book_id: bookId, question_index: currentIndex },
+      { onConflict: 'topic_id' }
     )
   }
 

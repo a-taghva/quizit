@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  })
 
   const value = useMemo(
     () => ({

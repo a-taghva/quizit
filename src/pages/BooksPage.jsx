@@ -25,7 +25,7 @@ export function BooksPage() {
     }
 
     fetchBooks()
-  }, [])
+  })
 
   if (loading) {
     return (
