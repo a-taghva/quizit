@@ -31,7 +31,7 @@ export function BookPage() {
     }
 
     fetchTopics()
-  })
+  }, [bookId])
 
   if (loading) {
     return (

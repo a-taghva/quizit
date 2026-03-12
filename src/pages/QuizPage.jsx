@@ -63,7 +63,7 @@ export function QuizPage() {
       setLoading(false)
     }
     fetchAll()
-  })
+  }, [topicId, bookId, user?.id])
 
   const combinedMistakes = { ...mistakes, ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -76,14 +76,14 @@ export function QuizPage() {
 
   useEffect(() => {
     scrollToActive(currentIndex)
-  })
+  }, [currentIndex])
 
   const handleBookmark = async () => {
     if (!user?.id) return
     setStatusIndex(currentIndex)
     await supabase.from('status').upsert(
-      { topic_id: topicId, book_id: bookId, question_index: currentIndex },
-      { onConflict: 'topic_id' }
+      { topic_id: topicId, book_id: bookId, question_index: currentIndex, user_id: user.id },
+      { onConflict: 'topic_id, user_id' }
     )
   }
 
