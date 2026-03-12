@@ -2,14 +2,11 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { BooksPage } from './pages/BooksPage'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 
 const theme = createTheme()
-
-function BooksPage() {
-  return null
-}
 
 function BookPage() {
   return null
