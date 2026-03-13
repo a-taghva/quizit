@@ -31,7 +31,21 @@ export function AppLayout() {
               <ArrowBackIcon />
             </IconButton>
           )}
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
+          <Typography
+            variant="h6"
+            component="div"
+            onClick={() => navigate('/')}
+            sx={{
+              position: 'absolute',
+              left: 48,
+              right: 48,
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            Plumber Exam
+          </Typography>
+          <Box sx={{ flexGrow: 1 }} />
           <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out" sx={{ p: 1.25 }}>
             <LogoutIcon />
           </IconButton>
