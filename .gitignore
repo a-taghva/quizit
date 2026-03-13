@@ -23,3 +23,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor / Android
+android/build
+android/app/build
+android/capacitor-cordova-android-plugins/build
+android/.gradle
+android/local.properties
+*.apk
+*.aab
+*.iml
