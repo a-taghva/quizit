@@ -3,7 +3,6 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { AppLayout } from './components/AppLayout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { BookPage } from './pages/BookPage'
-import { BooksPage } from './pages/BooksPage'
 import { LoginPage } from './pages/LoginPage'
 import { FavoritesQuizPage } from './pages/FavoritesQuizPage'
 import { MistakesQuizPage } from './pages/MistakesQuizPage'
@@ -11,10 +10,6 @@ import { QuizPage } from './pages/QuizPage'
 import { SignupPage } from './pages/SignupPage'
 
 const theme = createTheme()
-
-function TopicsPage() {
-  return null
-}
 
 export default function App() {
   return (
@@ -25,15 +20,12 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/books" element={<BooksPage />} />
-              <Route path="/book/:bookId" element={<BookPage />} />
-              <Route path="/book/:bookId/topics" element={<TopicsPage />} />
-              <Route path="/book/:bookId/topic/:topicId" element={<QuizPage />} />
-              <Route path="/book/:bookId/favorites" element={<FavoritesQuizPage />} />
-              <Route path="/book/:bookId/mistakes" element={<MistakesQuizPage />} />
+              <Route path="/" element={<BookPage />} />
+              <Route path="/favorites" element={<FavoritesQuizPage />} />
+              <Route path="/mistakes" element={<MistakesQuizPage />} />
+              <Route path="/:topicId/quiz" element={<QuizPage />} />
             </Route>
-            <Route path="/" element={<Navigate to="/books" replace />} />
-            <Route path="*" element={<Navigate to="/books" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
     </ThemeProvider>

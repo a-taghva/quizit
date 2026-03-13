@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Card,
@@ -12,7 +12,6 @@ import {
 import { supabase } from '../lib/supabase'
 
 export function BookPage() {
-  const { bookId } = useParams()
   const navigate = useNavigate()
   const [topics, setTopics] = useState([])
   const [statusByTopic, setStatusByTopic] = useState({})
@@ -23,10 +22,10 @@ export function BookPage() {
   useEffect(() => {
     async function fetchData() {
       const [topicsRes, statusRes, favoritesRes, mistakesRes] = await Promise.all([
-        supabase.from('topics').select('id, title, total_questions').eq('book_id', bookId).order('id'),
-        supabase.from('status').select('topic_id, question_index').eq('book_id', bookId),
-        supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('book_id', bookId),
-        supabase.from('mistakes').select('*', { count: 'exact', head: true }).eq('book_id', bookId),
+        supabase.from('topics').select('id, title, total_questions').order('id'),
+        supabase.from('status').select('topic_id, question_index'),
+        supabase.from('favorites').select('*', { count: 'exact', head: true }),
+        supabase.from('mistakes').select('*', { count: 'exact', head: true }),
       ])
 
       if (!topicsRes.error) {
@@ -47,7 +46,7 @@ export function BookPage() {
     }
 
     fetchData()
-  }, [bookId])
+  }, [])
 
   if (loading) {
     return (
@@ -76,7 +75,7 @@ export function BookPage() {
     >
       <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 600, justifyContent: 'space-between' }}>
         <Card sx={{ flex: 1 }}>
-          <CardActionArea onClick={() => navigate(`/book/${bookId}/favorites`)}>
+          <CardActionArea onClick={() => navigate('/favorites')}>
             <CardContent>
               <Typography variant="h6" component="h2">
                 Favorites
@@ -86,7 +85,7 @@ export function BookPage() {
           </CardActionArea>
         </Card>
         <Card sx={{ flex: 1 }}>
-          <CardActionArea onClick={() => navigate(`/book/${bookId}/mistakes`)}>
+          <CardActionArea onClick={() => navigate('/mistakes')}>
             <CardContent>
               <Typography variant="h6" component="h2">
                 Mistakes
@@ -102,7 +101,7 @@ export function BookPage() {
         const progress = Math.min(100, (answered / total) * 100)
         return (
           <Card key={topic.id} sx={{ width: '100%', maxWidth: 600 }}>
-            <CardActionArea onClick={() => navigate(`/book/${bookId}/topic/${topic.id}`)}>
+            <CardActionArea onClick={() => navigate(`/${topic.id}/quiz`)}>
               <CardContent>
                 <Typography variant="h6" component="h2">
                   {topic.title}

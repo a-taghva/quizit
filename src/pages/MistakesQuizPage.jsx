@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -16,7 +15,6 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { supabase } from '../lib/supabase'
 
 export function MistakesQuizPage() {
-  const { bookId } = useParams()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -28,8 +26,8 @@ export function MistakesQuizPage() {
   useEffect(() => {
     async function fetchAll() {
       const [favoritesRes, mistakesRes] = await Promise.all([
-        supabase.from('favorites').select('question_id').eq('book_id', bookId),
-        supabase.from('mistakes').select('question_id, questions(id, question, options, answer, explanation, topic_id)').eq('book_id', bookId),
+        supabase.from('favorites').select('question_id'),
+        supabase.from('mistakes').select('question_id, questions(id, question, options, answer, explanation, topic_id)'),
       ])
 
       const fav = {}
@@ -51,7 +49,7 @@ export function MistakesQuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [bookId])
+  }, [])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -72,14 +70,14 @@ export function MistakesQuizPage() {
     const topicId = q.topic_id
     const isFav = favoriteIds[q.id]
     if (isFav) {
-      await supabase.from('favorites').delete().eq('question_id', q.id).eq('book_id', bookId)
+      await supabase.from('favorites').delete().eq('question_id', q.id)
       setFavoriteIds((prev) => {
         const next = { ...prev }
         delete next[q.id]
         return next
       })
     } else {
-      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId, book_id: bookId })
+      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
       setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
     }
   }
@@ -94,17 +92,8 @@ export function MistakesQuizPage() {
 
     if (!correct) {
       setSessionMistakes((prev) => ({ ...prev, [currentIndex]: payload }))
-      if (q.topic_id) {
-        await supabase.from('mistakes').insert({
-          question_id: q.id,
-          user_answer: optionText,
-          correct_answer: q.answer,
-          topic_id: q.topic_id,
-          book_id: bookId,
-        })
-      }
     } else {
-      await supabase.from('mistakes').delete().eq('question_id', q.id).eq('book_id', bookId)
+      await supabase.from('mistakes').delete().eq('question_id', q.id)
     }
   }
 

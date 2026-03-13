@@ -17,7 +17,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/books'
+  const from = location.state?.from?.pathname || '/'
 
   async function handleSubmit(e) {
     e.preventDefault()

@@ -20,7 +20,7 @@ import { supabase } from '../lib/supabase'
 
 export function QuizPage() {
   const { user } = useAuth()
-  const { bookId, topicId } = useParams()
+  const { topicId } = useParams()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -55,7 +55,7 @@ export function QuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [topicId, bookId, user?.id])
+  }, [topicId, user?.id])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -78,7 +78,7 @@ export function QuizPage() {
     } else {
       setStatusIndex(currentIndex)
       await supabase.from('status').upsert(
-        { user_id: user.id, topic_id: topicId, book_id: bookId, question_index: currentIndex },
+        { user_id: user.id, topic_id: topicId, question_index: currentIndex },
         { onConflict: 'user_id,topic_id' }
       )
     }
@@ -98,7 +98,7 @@ export function QuizPage() {
         return next
       })
     } else {
-      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId, book_id: bookId })
+      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
       setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
     }
   }
@@ -113,20 +113,13 @@ export function QuizPage() {
 
     setStatusIndex(currentIndex)
     await supabase.from('status').upsert(
-      { user_id: user.id, topic_id: topicId, book_id: bookId, question_index: currentIndex },
+      { user_id: user.id, topic_id: topicId, question_index: currentIndex },
       { onConflict: 'user_id,topic_id' }
     )
 
     if (!correct) {
       setSessionMistakes((prev) => ({ ...prev, [currentIndex]: payload }))
-      await supabase.from('mistakes').insert({
-        question_index: currentIndex,
-        question_id: q.id,
-        user_answer: optionText,
-        correct_answer: q.answer,
-        topic_id: topicId,
-        book_id: bookId,
-      })
+      await supabase.from('mistakes').insert({ question_id: q.id, topic_id: topicId })
     }
   }
 

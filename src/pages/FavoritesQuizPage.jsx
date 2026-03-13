@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -16,7 +15,6 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { supabase } from '../lib/supabase'
 
 export function FavoritesQuizPage() {
-  const { bookId } = useParams()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -30,7 +28,6 @@ export function FavoritesQuizPage() {
       const { data, error } = await supabase
         .from('favorites')
         .select('question_id, questions(id, question, options, answer, explanation, topic_id)')
-        .eq('book_id', bookId)
 
       if (!error) {
         const seen = new Set()
@@ -51,7 +48,7 @@ export function FavoritesQuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [bookId])
+  }, [])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -71,11 +68,11 @@ export function FavoritesQuizPage() {
     if (!q) return
     const isFav = favoriteIds[q.id]
     if (isFav) {
-      await supabase.from('favorites').delete().eq('question_id', q.id).eq('book_id', bookId)
+      await supabase.from('favorites').delete().eq('question_id', q.id)
       setFavoriteIds((prev) => { const next = { ...prev }; delete next[q.id]; return next })
     } else {
       if (q.topic_id) {
-        await supabase.from('favorites').insert({ question_id: q.id, topic_id: q.topic_id, book_id: bookId })
+        await supabase.from('favorites').insert({ question_id: q.id, topic_id: q.topic_id })
         setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
       }
     }

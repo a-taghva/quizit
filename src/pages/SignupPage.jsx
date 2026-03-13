@@ -32,7 +32,7 @@ export function SignupPage() {
     try {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) throw error
-      navigate('/books', { replace: true })
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err.message || 'Failed to sign up')
     } finally {

@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase'
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const showBack = location.pathname !== '/books'
+  const showBack = location.pathname !== '/'
 
   async function handleSignOut() {
     await supabase.auth.signOut()
