@@ -245,31 +245,13 @@ export function QuizPage() {
         </CardContent>
       </Card>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button
           startIcon={<NavigateBeforeIcon />}
           onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
           disabled={currentIndex === 0}
         >
           Previous
-        </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          disabled={Object.keys(combinedMistakes).length === 0}
-          onClick={async () => {
-            await supabase.from('mistakes').delete().eq('topic_id', topicId)
-            const mistakenIndices = Object.keys(combinedMistakes).map(Number)
-            setMistakes({})
-            setSessionMistakes({})
-            setSessionAnswered((prev) => {
-              const next = { ...prev }
-              mistakenIndices.forEach((i) => delete next[i])
-              return next
-            })
-          }}
-        >
-          Clear mistakes
         </Button>
         <Button
           endIcon={<NavigateNextIcon />}
