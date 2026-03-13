@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage'
 import { FavoritesQuizPage } from './pages/FavoritesQuizPage'
 import { MistakesQuizPage } from './pages/MistakesQuizPage'
 import { QuizPage } from './pages/QuizPage'
+import { ResultPage } from './pages/ResultPage'
 import { SignupPage } from './pages/SignupPage'
 
 const theme = createTheme()
@@ -24,6 +25,7 @@ export default function App() {
               <Route path="/favorites" element={<FavoritesQuizPage />} />
               <Route path="/mistakes" element={<MistakesQuizPage />} />
               <Route path="/:topicId/quiz" element={<QuizPage />} />
+              <Route path="/:topicId/result" element={<ResultPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

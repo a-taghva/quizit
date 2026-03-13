@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -21,6 +21,7 @@ import { supabase } from '../lib/supabase'
 export function QuizPage() {
   const { user } = useAuth()
   const { topicId } = useParams()
+  const navigate = useNavigate()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -118,12 +119,31 @@ export function QuizPage() {
     )
 
     if (!correct) {
-      setSessionMistakes((prev) => ({ ...prev, [currentIndex]: payload }))
+      setSessionMistakes((prev) => ({
+        ...prev,
+        [currentIndex]: {
+          question_id: q.id,
+          question: q.question,
+          user_answer: optionText,
+          correct_answer: q.answer,
+          explanation: q.explanation,
+        },
+      }))
       await supabase.from('mistakes').insert({ question_id: q.id, topic_id: topicId })
     }
   }
 
   const answered = allAnswered[currentIndex]
+  const handleExitQuiz = () => {
+    const mistakesList = Object.values(sessionMistakes)
+    navigate(`/${topicId}/result`, {
+      state: {
+        totalAnswered: Object.keys(sessionAnswered).length,
+        mistakes: mistakesList,
+        favoriteIds: { ...favoriteIds },
+      },
+    })
+  }
   const currentQuestion = questions[currentIndex]
   const isFavorite = currentQuestion && favoriteIds[currentQuestion.id]
 
@@ -230,7 +250,11 @@ export function QuizPage() {
         </CardContent>
       </Card>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+        <Button variant="outlined" onClick={handleExitQuiz}>
+          Exit quiz
+        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
         <Button
           startIcon={<NavigateBeforeIcon />}
           onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
@@ -245,6 +269,7 @@ export function QuizPage() {
         >
           Next
         </Button>
+        </Box>
       </Box>
     </Box>
   )

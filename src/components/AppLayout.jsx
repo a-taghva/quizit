@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { Outlet } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -8,7 +8,8 @@ import { supabase } from '../lib/supabase'
 export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const showBack = location.pathname !== '/'
+  const isQuizOrResult = /\/quiz$|\/result$/.test(location.pathname)
+  const showBack = location.pathname !== '/' && !isQuizOrResult
 
   async function handleSignOut() {
     await supabase.auth.signOut()
