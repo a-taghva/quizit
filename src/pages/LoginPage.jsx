@@ -43,9 +43,22 @@ export function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         p: 2,
+        pt: 'env(safe-area-inset-top)',
+        pb: 'env(safe-area-inset-bottom)',
       }}
     >
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          maxWidth: 400,
+          width: '100%',
+          borderRadius: 3,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+          border: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Log in
         </Typography>
@@ -81,7 +94,7 @@ export function LoginPage() {
             variant="contained"
             size="large"
             disabled={loading}
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 3, mb: 2, minHeight: 48 }}
           >
             {loading ? 'Signing in...' : 'Log in'}
           </Button>

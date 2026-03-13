@@ -17,22 +17,22 @@ export function AppLayout() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
+    <Box sx={{ minHeight: '100vh', pb: 'env(safe-area-inset-bottom)', bgcolor: 'background.default' }}>
+      <AppBar position="static" elevation={0} sx={{ bgcolor: 'primary.main', pt: 'env(safe-area-inset-top)' }}>
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
           {showBack && (
             <IconButton
               color="inherit"
               edge="start"
               onClick={() => navigate(-1)}
-              sx={{ mr: 1 }}
+              sx={{ mr: 1, p: 1.25 }}
               aria-label="back"
             >
               <ArrowBackIcon />
             </IconButton>
           )}
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
-          <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out">
+          <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out" sx={{ p: 1.25 }}>
             <LogoutIcon />
           </IconButton>
         </Toolbar>

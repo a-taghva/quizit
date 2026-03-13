@@ -10,7 +10,31 @@ import { QuizPage } from './pages/QuizPage'
 import { ResultPage } from './pages/ResultPage'
 import { SignupPage } from './pages/SignupPage'
 
-const theme = createTheme()
+const theme = createTheme({
+  palette: {
+    primary: { main: '#0f172a' },
+    background: { default: '#f8fafc', paper: '#ffffff' },
+  },
+  shape: { borderRadius: 16 },
+  typography: {
+    fontFamily: '"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif',
+    htmlFontSize: 14,
+    h5: { fontWeight: 700 },
+    h6: { fontWeight: 600 },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: { textTransform: 'none', borderRadius: 12, minHeight: 48 },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: { borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+})
 
 export default function App() {
   return (

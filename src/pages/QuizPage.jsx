@@ -11,12 +11,14 @@ import {
 } from '@mui/material'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import FlagIcon from '@mui/icons-material/Flag'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { ReportQuestionModal } from '../components/ReportQuestionModal'
 
 export function QuizPage() {
   const { user } = useAuth()
@@ -30,6 +32,7 @@ export function QuizPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [sessionMistakes, setSessionMistakes] = useState({})
   const [sessionAnswered, setSessionAnswered] = useState({})
+  const [reportModalOpen, setReportModalOpen] = useState(false)
 
   useEffect(() => {
     async function fetchAll() {
@@ -86,6 +89,10 @@ export function QuizPage() {
   }
 
   const isBookmarked = statusIndex === currentIndex
+
+  const handleReport = async ({ question_id, description }) => {
+    await supabase.from('reports').insert({ question_id, description })
+  }
 
   const toggleFavorite = async () => {
     const q = questions[currentIndex]
@@ -164,7 +171,14 @@ export function QuizPage() {
   }
 
   return (
-    <Box sx={{ p: 2, maxWidth: 800, mx: 'auto' }}>
+    <Box
+      sx={{
+        p: { xs: 2, sm: 3 },
+        pb: { xs: 5, sm: 4 },
+        maxWidth: 640,
+        mx: 'auto',
+      }}
+    >
       <Box
         ref={navRef}
         sx={{
@@ -172,7 +186,10 @@ export function QuizPage() {
           gap: 1,
           overflowX: 'auto',
           pb: 2,
+          mx: -1,
+          px: 1,
           '&::-webkit-scrollbar': { height: 6 },
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {questions.map((_, i) => (
@@ -182,8 +199,8 @@ export function QuizPage() {
             onClick={() => setCurrentIndex(i)}
             sx={{
               flexShrink: 0,
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               borderRadius: 1,
               display: 'flex',
               alignItems: 'center',
@@ -200,8 +217,8 @@ export function QuizPage() {
         ))}
       </Box>
 
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
+      <Card sx={{ mb: 2, overflow: 'hidden' }}>
+        <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2.5, sm: 3 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="h6">
               Question {currentIndex + 1} of {questions.length}
@@ -209,6 +226,9 @@ export function QuizPage() {
             <Box>
               <IconButton onClick={handleBookmark} color={isBookmarked ? 'primary' : 'default'}>
                 {isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+              </IconButton>
+              <IconButton onClick={() => setReportModalOpen(true)} color="default" aria-label="Report question">
+                <FlagIcon />
               </IconButton>
               <IconButton onClick={toggleFavorite} color={isFavorite ? 'error' : 'default'}>
                 {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
@@ -233,7 +253,11 @@ export function QuizPage() {
                   sx={{
                     justifyContent: 'flex-start',
                     textTransform: 'none',
-                    bgcolor: isWrong ? 'rgba(255, 195, 185)' : isCorrect ? 'rgba(180, 225, 190)' : undefined,
+                    minHeight: 52,
+                    py: 1.5,
+                    borderRadius: 2,
+                    bgcolor: isWrong ? 'rgba(254, 202, 202)' : isCorrect ? 'rgba(167, 243, 208)' : undefined,
+                    borderColor: isWrong ? 'error.light' : isCorrect ? 'success.light' : undefined,
                   }}
                 >
                   {opt}
@@ -250,8 +274,17 @@ export function QuizPage() {
         </CardContent>
       </Card>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-        <Button variant="outlined" onClick={handleExitQuiz}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 1.5,
+          pt: 1,
+        }}
+      >
+        <Button variant="outlined" onClick={handleExitQuiz} sx={{ minHeight: 44 }}>
           Exit quiz
         </Button>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -271,6 +304,12 @@ export function QuizPage() {
         </Button>
         </Box>
       </Box>
+      <ReportQuestionModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        questionId={currentQuestion?.id}
+        onReport={handleReport}
+      />
     </Box>
   )
 }

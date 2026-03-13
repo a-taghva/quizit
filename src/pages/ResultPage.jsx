@@ -54,42 +54,42 @@ export function ResultPage() {
   return (
     <Box
       sx={{
-        p: 2,
-        maxWidth: 800,
+        p: { xs: 2, sm: 3 },
+        pb: { xs: 5, sm: 4 },
+        maxWidth: 640,
         mx: 'auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        minHeight: 'calc(100vh - 64px)',
       }}
     >
       <Box
         sx={{
-          width: 160,
-          height: 160,
+          width: { xs: 140, sm: 160 },
+          height: { xs: 140, sm: 160 },
           borderRadius: '50%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: `conic-gradient(#4caf50 ${percentage}%, #e0e0e0 ${percentage}%)`,
+          background: `conic-gradient(#0f172a ${percentage}%, #e2e8f0 ${percentage}%)`,
           position: 'relative',
-          mb: 4,
+          mb: { xs: 3, sm: 4 },
           flexShrink: 0,
         }}
       >
         <Box
           sx={{
-            width: 130,
-            height: 130,
+            width: { xs: 112, sm: 130 },
+            height: { xs: 112, sm: 130 },
             borderRadius: '50%',
             bgcolor: 'background.paper',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            position: 'absolute',
-            boxShadow: 2,
+          position: 'absolute',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           }}
         >
           <Typography variant="h4" component="span" fontWeight="bold">
@@ -110,7 +110,7 @@ export function ResultPage() {
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
           {mistakes.map((m, i) => (
-            <Card key={m.question_id ?? i}>
+            <Card key={m.question_id ?? i} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                   <Typography variant="body1" sx={{ flex: 1 }}>
@@ -120,15 +120,16 @@ export function ResultPage() {
                     onClick={() => toggleFavorite(m.question_id)}
                     color={favoriteIds[m.question_id] ? 'error' : 'default'}
                     size="small"
+                    sx={{ m: -0.5 }}
                   >
                     {favoriteIds[m.question_id] ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                   </IconButton>
                 </Box>
                 <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="body2" sx={{ color: 'rgba(255, 195, 185)' }}>
+                  <Typography variant="body2" sx={{ color: 'error.main' }}>
                     Your answer: {m.user_answer}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(180, 225, 190)' }}>
+                  <Typography variant="body2" sx={{ color: 'success.main' }}>
                     Correct: {m.correct_answer}
                   </Typography>
                 </Box>
@@ -143,7 +144,7 @@ export function ResultPage() {
         </Box>
       )}
 
-      <Button variant="contained" size="large" onClick={() => navigate('/')} sx={{ mt: 4 }}>
+      <Button variant="contained" size="large" onClick={() => navigate('/')} sx={{ mt: 4, minHeight: 48 }}>
         Go home
       </Button>
     </Box>
