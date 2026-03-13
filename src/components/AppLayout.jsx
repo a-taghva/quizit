@@ -1,19 +1,40 @@
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material'
-import LogoutIcon from '@mui/icons-material/Logout'
+import MenuIcon from '@mui/icons-material/Menu'
+import { AppBar, Box, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import { Outlet } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
 export function AppLayout() {
+  const { user } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const [menuAnchor, setMenuAnchor] = useState(null)
+  const [mistakesCount, setMistakesCount] = useState(0)
+  const isMainPage = location.pathname === '/'
+
+  useEffect(() => {
+    if (!isMainPage) return
+    supabase.from('mistakes').select('*', { count: 'exact', head: true }).then(({ count }) => {
+      setMistakesCount(count ?? 0)
+    })
+  }, [isMainPage, menuAnchor])
   const isQuizOrResult = /\/quiz$|\/result$/.test(location.pathname)
   const showBack = location.pathname !== '/' && !isQuizOrResult
 
   async function handleSignOut() {
+    setMenuAnchor(null)
     await supabase.auth.signOut()
     navigate('/login')
+  }
+
+  async function handleResetMistakes() {
+    setMenuAnchor(null)
+    if (!user?.id) return
+    await supabase.from('mistakes').delete().eq('user_id', user.id)
+    window.location.reload()
   }
 
   return (
@@ -46,9 +67,34 @@ export function AppLayout() {
             Plumber Exam
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out" sx={{ p: 1.25 }}>
-            <LogoutIcon />
-          </IconButton>
+          {isMainPage ? (
+            <>
+              <IconButton
+                color="inherit"
+                onClick={(e) => setMenuAnchor(e.currentTarget)}
+                aria-label="menu"
+                sx={{ p: 1.25 }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Menu
+                anchorEl={menuAnchor}
+                open={!!menuAnchor}
+                onClose={() => setMenuAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                <MenuItem
+                  onClick={handleResetMistakes}
+                  disabled={mistakesCount === 0}
+                  sx={{ color: mistakesCount > 0 ? 'error.main' : 'text.disabled' }}
+                >
+                  Reset mistakes
+                </MenuItem>
+                <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+              </Menu>
+            </>
+          ) : null}
         </Toolbar>
       </AppBar>
       <Outlet />
