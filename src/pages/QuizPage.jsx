@@ -119,6 +119,12 @@ export function QuizPage() {
     const payload = { user_answer: optionText, correct_answer: q.answer }
     setSessionAnswered((prev) => ({ ...prev, [currentIndex]: payload }))
 
+    setStatusIndex(currentIndex)
+    await supabase.from('status').upsert(
+      { user_id: user.id, topic_id: topicId, book_id: bookId, question_index: currentIndex },
+      { onConflict: 'user_id,topic_id' }
+    )
+
     if (!correct) {
       setSessionMistakes((prev) => ({ ...prev, [currentIndex]: payload }))
       await supabase.from('mistakes').insert({
