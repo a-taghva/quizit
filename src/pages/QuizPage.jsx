@@ -25,7 +25,6 @@ export function QuizPage() {
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
   const [favoriteIds, setFavoriteIds] = useState({})
-  const [mistakes, setMistakes] = useState({})
   const [statusIndex, setStatusIndex] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [sessionMistakes, setSessionMistakes] = useState({})
@@ -33,10 +32,9 @@ export function QuizPage() {
 
   useEffect(() => {
     async function fetchAll() {
-      const [questionsRes, favoritesRes, mistakesRes, statusRes] = await Promise.all([
+      const [questionsRes, favoritesRes, statusRes] = await Promise.all([
         supabase.from('questions').select('id, question, options, explanation, answer').eq('topic_id', topicId),
         supabase.from('favorites').select('question_id').eq('topic_id', topicId),
-        supabase.from('mistakes').select('question_index, user_answer, correct_answer').eq('topic_id', topicId),
         user?.id
           ? supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle()
           : Promise.resolve({ data: null, error: null }),
@@ -50,12 +48,6 @@ export function QuizPage() {
         ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
         setFavoriteIds(fav)
 
-        const m = {}
-        ;(mistakesRes.data ?? []).forEach((r) => {
-          m[r.question_index] = { user_answer: r.user_answer, correct_answer: r.correct_answer }
-        })
-        setMistakes(m)
-
         const statusRow = statusRes.data
         setStatusIndex(statusRow ? statusRow.question_index : null)
         setCurrentIndex(statusRow?.question_index ?? 0)
@@ -65,7 +57,7 @@ export function QuizPage() {
     fetchAll()
   }, [topicId, bookId, user?.id])
 
-  const combinedMistakes = { ...mistakes, ...sessionMistakes }
+  const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
 
   const scrollToActive = (index) => {
