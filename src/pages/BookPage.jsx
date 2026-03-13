@@ -84,12 +84,14 @@ export function BookPage() {
           </CardContent>
         </Card>
         <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2">
-              Mistakes
-            </Typography>
-            <Typography color="text.secondary">{mistakesCount}</Typography>
-          </CardContent>
+          <CardActionArea onClick={() => navigate(`/book/${bookId}/mistakes`)}>
+            <CardContent>
+              <Typography variant="h6" component="h2">
+                Mistakes
+              </Typography>
+              <Typography color="text.secondary">{mistakesCount}</Typography>
+            </CardContent>
+          </CardActionArea>
         </Card>
       </Box>
       {topics.map((topic) => {
