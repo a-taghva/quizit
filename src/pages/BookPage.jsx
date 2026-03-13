@@ -74,7 +74,7 @@ export function BookPage() {
         mx: 'auto',
       }}
     >
-      <Box sx={{ display: 'flex', gap: 2, width: '100%', flexDirection: { xs: 'column', sm: 'row' } }}>
+      <Box sx={{ display: 'flex', gap: 2, width: '100%', flexDirection: 'row' }}>
         <Card sx={{ flex: 1, minHeight: 88 }}>
           <CardActionArea onClick={() => navigate('/favorites')} sx={{ height: '100%', minHeight: 88 }}>
             <CardContent sx={{ py: 2 }}>
