@@ -145,11 +145,16 @@ export function QuizPage() {
 
   const answered = allAnswered[currentIndex]
   const handleExitQuiz = () => {
+    const totalAnswered = Object.keys(sessionAnswered).length
+    if (totalAnswered === 0) {
+      navigate('/', { replace: true })
+      return
+    }
     const mistakesList = Object.values(sessionMistakes)
     navigate(`/${topicId}/result`, {
       replace: true,
       state: {
-        totalAnswered: Object.keys(sessionAnswered).length,
+        totalAnswered,
         mistakes: mistakesList,
         favoriteIds: { ...favoriteIds },
       },
