@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { BookPage } from './pages/BookPage'
 import { BooksPage } from './pages/BooksPage'
 import { LoginPage } from './pages/LoginPage'
+import { FavoritesQuizPage } from './pages/FavoritesQuizPage'
 import { MistakesQuizPage } from './pages/MistakesQuizPage'
 import { QuizPage } from './pages/QuizPage'
 import { SignupPage } from './pages/SignupPage'
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/book/:bookId" element={<BookPage />} />
               <Route path="/book/:bookId/topics" element={<TopicsPage />} />
               <Route path="/book/:bookId/topic/:topicId" element={<QuizPage />} />
+              <Route path="/book/:bookId/favorites" element={<FavoritesQuizPage />} />
               <Route path="/book/:bookId/mistakes" element={<MistakesQuizPage />} />
             </Route>
             <Route path="/" element={<Navigate to="/books" replace />} />

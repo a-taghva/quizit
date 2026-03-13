@@ -76,12 +76,14 @@ export function BookPage() {
     >
       <Box sx={{ display: 'flex', gap: 3, width: '100%', maxWidth: 600, justifyContent: 'space-between' }}>
         <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2">
-              Favorites
-            </Typography>
-            <Typography color="text.secondary">{favoritesCount}</Typography>
-          </CardContent>
+          <CardActionArea onClick={() => navigate(`/book/${bookId}/favorites`)}>
+            <CardContent>
+              <Typography variant="h6" component="h2">
+                Favorites
+              </Typography>
+              <Typography color="text.secondary">{favoritesCount}</Typography>
+            </CardContent>
+          </CardActionArea>
         </Card>
         <Card sx={{ flex: 1 }}>
           <CardActionArea onClick={() => navigate(`/book/${bookId}/mistakes`)}>
