@@ -1,26 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MenuIcon from '@mui/icons-material/Menu'
 import { AppBar, Box, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useMistakes } from '../contexts/MistakesContext'
 import { supabase } from '../lib/supabase'
 
 export function AppLayout() {
   const { user } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const { mistakesCount, refreshMistakesCount } = useMistakes()
   const [menuAnchor, setMenuAnchor] = useState(null)
-  const [mistakesCount, setMistakesCount] = useState(0)
   const isMainPage = location.pathname === '/'
-
-  useEffect(() => {
-    if (!isMainPage) return
-    supabase.from('mistakes').select('*', { count: 'exact', head: true }).then(({ count }) => {
-      setMistakesCount(count ?? 0)
-    })
-  }, [isMainPage, menuAnchor])
   const isQuizOrResult = /\/quiz$|\/result$/.test(location.pathname)
   const showBack = location.pathname !== '/' && !isQuizOrResult
 
@@ -34,7 +28,7 @@ export function AppLayout() {
     setMenuAnchor(null)
     if (!user?.id) return
     await supabase.from('mistakes').delete().eq('user_id', user.id)
-    window.location.reload()
+    refreshMistakesCount()
   }
 
   return (

@@ -17,11 +17,13 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { useAuth } from '../contexts/AuthContext'
+import { useMistakes } from '../contexts/MistakesContext'
 import { supabase } from '../lib/supabase'
 import { ReportQuestionModal } from '../components/ReportQuestionModal'
 
 export function QuizPage() {
   const { user } = useAuth()
+  const { refreshMistakesCount } = useMistakes()
   const { topicId } = useParams()
   const navigate = useNavigate()
   const navRef = useRef(null)
@@ -137,6 +139,7 @@ export function QuizPage() {
         },
       }))
       await supabase.from('mistakes').insert({ question_id: q.id, topic_id: topicId })
+      refreshMistakesCount()
     }
   }
 

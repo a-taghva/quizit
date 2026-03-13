@@ -14,9 +14,11 @@ import FlagIcon from '@mui/icons-material/Flag'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { supabase } from '../lib/supabase'
+import { useMistakes } from '../contexts/MistakesContext'
 import { ReportQuestionModal } from '../components/ReportQuestionModal'
 
 export function MistakesQuizPage() {
+  const { refreshMistakesCount } = useMistakes()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -101,6 +103,7 @@ export function MistakesQuizPage() {
       setSessionMistakes((prev) => ({ ...prev, [currentIndex]: payload }))
     } else {
       await supabase.from('mistakes').delete().eq('question_id', q.id)
+      refreshMistakesCount()
     }
   }
 

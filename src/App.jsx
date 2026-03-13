@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { AppLayout } from './components/AppLayout'
+import { MistakesProvider } from './contexts/MistakesContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { BookPage } from './pages/BookPage'
 import { LoginPage } from './pages/LoginPage'
@@ -44,7 +45,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><MistakesProvider><AppLayout /></MistakesProvider></ProtectedRoute>}>
               <Route path="/" element={<BookPage />} />
               <Route path="/favorites" element={<FavoritesQuizPage />} />
               <Route path="/mistakes" element={<MistakesQuizPage />} />

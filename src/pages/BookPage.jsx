@@ -10,22 +10,22 @@ import {
   LinearProgress,
 } from '@mui/material'
 import { supabase } from '../lib/supabase'
+import { useMistakes } from '../contexts/MistakesContext'
 
 export function BookPage() {
   const navigate = useNavigate()
+  const { mistakesCount } = useMistakes()
   const [topics, setTopics] = useState([])
   const [statusByTopic, setStatusByTopic] = useState({})
   const [favoritesCount, setFavoritesCount] = useState(0)
-  const [mistakesCount, setMistakesCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
-      const [topicsRes, statusRes, favoritesRes, mistakesRes] = await Promise.all([
+      const [topicsRes, statusRes, favoritesRes] = await Promise.all([
         supabase.from('topics').select('id, title, total_questions').order('id'),
         supabase.from('status').select('topic_id, question_index'),
         supabase.from('favorites').select('*', { count: 'exact', head: true }),
-        supabase.from('mistakes').select('*', { count: 'exact', head: true }),
       ])
 
       if (!topicsRes.error) {
@@ -38,9 +38,6 @@ export function BookPage() {
       }
       if (!favoritesRes.error) {
         setFavoritesCount(favoritesRes.count ?? 0)
-      }
-      if (!mistakesRes.error) {
-        setMistakesCount(mistakesRes.count ?? 0)
       }
       setLoading(false)
     }
