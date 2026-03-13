@@ -101,6 +101,10 @@ export function ResultPage() {
         </Box>
       </Box>
 
+      <Button variant="contained" size="large" onClick={() => navigate('/')} sx={{ mb: 3, minHeight: 48 }}>
+        Go home
+      </Button>
+
       <Typography variant="h6" sx={{ mb: 2, alignSelf: 'stretch' }}>
         Mistakes
       </Typography>
@@ -143,10 +147,6 @@ export function ResultPage() {
           ))}
         </Box>
       )}
-
-      <Button variant="contained" size="large" onClick={() => navigate('/')} sx={{ mt: 4, minHeight: 48 }}>
-        Go home
-      </Button>
     </Box>
   )
 }
