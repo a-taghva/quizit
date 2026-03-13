@@ -147,6 +147,7 @@ export function QuizPage() {
   const handleExitQuiz = () => {
     const mistakesList = Object.values(sessionMistakes)
     navigate(`/${topicId}/result`, {
+      replace: true,
       state: {
         totalAnswered: Object.keys(sessionAnswered).length,
         mistakes: mistakesList,

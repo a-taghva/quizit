@@ -40,7 +40,7 @@ export function ResultPage() {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography>No result data. Start a quiz first.</Typography>
-        <Button sx={{ mt: 2 }} onClick={() => navigate('/')}>
+        <Button sx={{ mt: 2 }} onClick={() => navigate('/', { replace: true })}>
           Go home
         </Button>
       </Box>
@@ -101,7 +101,7 @@ export function ResultPage() {
         </Box>
       </Box>
 
-      <Button variant="contained" size="large" onClick={() => navigate('/')} sx={{ mb: 3, minHeight: 48 }}>
+      <Button variant="contained" size="large" onClick={() => navigate('/', { replace: true })} sx={{ mb: 3, minHeight: 48 }}>
         Go home
       </Button>
 
