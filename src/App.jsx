@@ -9,8 +9,6 @@ import { FavoritesQuizPage } from './pages/FavoritesQuizPage'
 import { MistakesQuizPage } from './pages/MistakesQuizPage'
 import { QuizPage } from './pages/QuizPage'
 import { ResultPage } from './pages/ResultPage'
-import { SignupPage } from './pages/SignupPage'
-
 const theme = createTheme({
   palette: {
     primary: { main: '#0f172a' },
@@ -44,7 +42,7 @@ export default function App() {
       <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup" element={<Navigate to="/login" replace />} />
             <Route element={<ProtectedRoute><MistakesProvider><AppLayout /></MistakesProvider></ProtectedRoute>}>
               <Route path="/" element={<BookPage />} />
               <Route path="/favorites" element={<FavoritesQuizPage />} />

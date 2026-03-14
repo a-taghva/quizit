@@ -1,35 +1,39 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import {
   Box,
   Button,
-  TextField,
   Typography,
   Paper,
   Alert,
 } from '@mui/material'
+import GoogleIcon from '@mui/icons-material/Google'
 import { supabase } from '../lib/supabase'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/'
 
-  async function handleSubmit(e) {
-    e.preventDefault()
+  async function handleGoogleSignIn() {
     setError('')
     setLoading(true)
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}${from}`,
+        },
+      })
       if (error) throw error
-      navigate(from, { replace: true })
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+      setError('Redirect to Google sign-in failed. Please try again.')
     } catch (err) {
-      setError(err.message || 'Failed to sign in')
+      setError(err.message || 'Failed to sign in with Google')
     } finally {
       setLoading(false)
     }
@@ -60,7 +64,7 @@ export function LoginPage() {
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Log in
+          Plumber Exam
         </Typography>
 
         {error && (
@@ -69,40 +73,17 @@ export function LoginPage() {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            margin="normal"
-          />
-          <Button
-            fullWidth
-            type="submit"
-            variant="contained"
-            size="large"
-            disabled={loading}
-            sx={{ mt: 3, mb: 2, minHeight: 48 }}
-          >
-            {loading ? 'Signing in...' : 'Log in'}
-          </Button>
-        </form>
-
-        <Typography align="center">
-          Don&apos;t have an account? <Link to="/signup">Sign up</Link>
-        </Typography>
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          disabled={loading}
+          onClick={handleGoogleSignIn}
+          startIcon={<GoogleIcon />}
+          sx={{ mt: 2, mb: 2, minHeight: 48 }}
+        >
+          {loading ? 'Signing in...' : 'Sign in with Google'}
+        </Button>
       </Paper>
     </Box>
   )
