@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -20,13 +20,16 @@ import { useAuth } from '../contexts/AuthContext'
 import { useMistakes } from '../contexts/MistakesContext'
 import { supabase } from '../lib/supabase'
 import { ReportQuestionModal } from '../components/ReportQuestionModal'
+import { SignInPromptModal } from '../components/SignInPromptModal'
 
 export function QuizPage() {
   const { user } = useAuth()
   const { refreshMistakesCount } = useMistakes()
   const { topicId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const navRef = useRef(null)
+  const [totalQuestions, setTotalQuestions] = useState(location.state?.totalQuestions ?? 10)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
   const [favoriteIds, setFavoriteIds] = useState({})
@@ -35,33 +38,49 @@ export function QuizPage() {
   const [sessionMistakes, setSessionMistakes] = useState({})
   const [sessionAnswered, setSessionAnswered] = useState({})
   const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [signInModalVariant, setSignInModalVariant] = useState(null)
 
   useEffect(() => {
     async function fetchAll() {
-      const [questionsRes, favoritesRes, statusRes] = await Promise.all([
-        supabase.from('questions').select('id, question, options, explanation, answer').eq('topic_id', topicId),
-        supabase.from('favorites').select('question_id').eq('topic_id', topicId),
-        user?.id
-          ? supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle()
-          : Promise.resolve({ data: null, error: null }),
-      ])
-
-      if (!questionsRes.error) {
-        const q = questionsRes.data ?? []
-        setQuestions(q)
-
-        const fav = {}
-        ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
-        setFavoriteIds(fav)
-
-        const statusRow = statusRes.data
-        setStatusIndex(statusRow ? statusRow.question_index : null)
-        setCurrentIndex(statusRow?.question_index ?? 0)
+      if (!user) {
+        const [questionsRes, topicRes] = await Promise.all([
+          supabase
+            .from('questions')
+            .select('id, question, options, explanation, answer')
+            .eq('topic_id', topicId)
+            .limit(10),
+          supabase.from('topics').select('total_questions').eq('id', topicId).single(),
+        ])
+        if (!questionsRes.error) {
+          setQuestions(questionsRes.data ?? [])
+          setCurrentIndex(0)
+        }
+        if (!topicRes.error && topicRes.data?.total_questions != null) {
+          setTotalQuestions(topicRes.data.total_questions)
+        } else if (location.state?.totalQuestions != null) {
+          setTotalQuestions(location.state.totalQuestions)
+        }
+      } else {
+        const [questionsRes, favoritesRes, statusRes] = await Promise.all([
+          supabase.from('questions').select('id, question, options, explanation, answer').eq('topic_id', topicId),
+          supabase.from('favorites').select('question_id').eq('topic_id', topicId),
+          supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle(),
+        ])
+        if (!questionsRes.error) {
+          const q = questionsRes.data ?? []
+          setQuestions(q)
+          const fav = {}
+          ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
+          setFavoriteIds(fav)
+          const statusRow = statusRes.data
+          setStatusIndex(statusRow ? statusRow.question_index : null)
+          setCurrentIndex(statusRow?.question_index ?? 0)
+        }
       }
       setLoading(false)
     }
     fetchAll()
-  }, [topicId, user?.id])
+  }, [topicId, user?.id, location.state?.totalQuestions])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -80,13 +99,16 @@ export function QuizPage() {
     const alreadyBookmarked = statusIndex === currentIndex
     if (alreadyBookmarked) {
       setStatusIndex(null)
-      await supabase.from('status').delete().eq('topic_id', topicId)
+      const { error } = await supabase.from('status').delete().eq('topic_id', topicId)
+      if (error) setStatusIndex(currentIndex)
     } else {
+      const prev = statusIndex
       setStatusIndex(currentIndex)
-      await supabase.from('status').upsert(
+      const { error } = await supabase.from('status').upsert(
         { user_id: user.id, topic_id: topicId, question_index: currentIndex },
         { onConflict: 'user_id,topic_id' }
       )
+      if (error) setStatusIndex(prev)
     }
   }
 
@@ -101,15 +123,14 @@ export function QuizPage() {
     if (!q) return
     const isFav = favoriteIds[q.id]
     if (isFav) {
-      await supabase.from('favorites').delete().eq('question_id', q.id).eq('topic_id', topicId)
-      setFavoriteIds((prev) => {
-        const next = { ...prev }
-        delete next[q.id]
-        return next
-      })
+      const prev = { ...favoriteIds }
+      setFavoriteIds((p) => { const next = { ...p }; delete next[q.id]; return next })
+      const { error } = await supabase.from('favorites').delete().eq('question_id', q.id).eq('topic_id', topicId)
+      if (error) setFavoriteIds(prev)
     } else {
-      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
       setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
+      const { error } = await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
+      if (error) setFavoriteIds((prev) => { const next = { ...prev }; delete next[q.id]; return next })
     }
   }
 
@@ -121,13 +142,27 @@ export function QuizPage() {
     const payload = { user_answer: optionText, correct_answer: q.answer }
     setSessionAnswered((prev) => ({ ...prev, [currentIndex]: payload }))
 
-    setStatusIndex(currentIndex)
-    await supabase.from('status').upsert(
-      { user_id: user.id, topic_id: topicId, question_index: currentIndex },
-      { onConflict: 'user_id,topic_id' }
-    )
-
-    if (!correct) {
+    if (user) {
+      setStatusIndex(currentIndex)
+      await supabase.from('status').upsert(
+        { user_id: user.id, topic_id: topicId, question_index: currentIndex },
+        { onConflict: 'user_id,topic_id' }
+      )
+      if (!correct) {
+        setSessionMistakes((prev) => ({
+          ...prev,
+          [currentIndex]: {
+            question_id: q.id,
+            question: q.question,
+            user_answer: optionText,
+            correct_answer: q.answer,
+            explanation: q.explanation,
+          },
+        }))
+        await supabase.from('mistakes').insert({ question_id: q.id, topic_id: topicId })
+        refreshMistakesCount()
+      }
+    } else if (!correct) {
       setSessionMistakes((prev) => ({
         ...prev,
         [currentIndex]: {
@@ -138,8 +173,6 @@ export function QuizPage() {
           explanation: q.explanation,
         },
       }))
-      await supabase.from('mistakes').insert({ question_id: q.id, topic_id: topicId })
-      refreshMistakesCount()
     }
   }
 
@@ -224,6 +257,27 @@ export function QuizPage() {
             {i + 1}
           </Box>
         ))}
+        {!user && totalQuestions > 10 && Array.from({ length: totalQuestions - 10 }, (_, i) => i + 10).map((i) => (
+          <Box
+            key={`locked-${i}`}
+            data-index={i}
+            onClick={() => setSignInModalVariant('all-questions')}
+            sx={{
+              flexShrink: 0,
+              width: 44,
+              height: 44,
+              borderRadius: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'action.disabledBackground',
+              color: 'text.disabled',
+              cursor: 'pointer',
+            }}
+          >
+            {i + 1}
+          </Box>
+        ))}
       </Box>
 
       <Card sx={{ mb: 2, overflow: 'hidden' }}>
@@ -233,13 +287,26 @@ export function QuizPage() {
               Question {currentIndex + 1} of {questions.length}
             </Typography>
             <Box>
-              <IconButton onClick={handleBookmark} color={isBookmarked ? 'primary' : 'default'}>
+              <IconButton
+                onClick={!user ? () => setSignInModalVariant('features') : handleBookmark}
+                color={isBookmarked ? 'primary' : 'default'}
+                sx={!user ? { opacity: 0.6 } : {}}
+              >
                 {isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
               </IconButton>
-              <IconButton onClick={() => setReportModalOpen(true)} color="default" aria-label="Report question">
+              <IconButton
+                onClick={!user ? () => setSignInModalVariant('features') : () => setReportModalOpen(true)}
+                color="default"
+                aria-label="Report question"
+                sx={!user ? { opacity: 0.6 } : {}}
+              >
                 <FlagIcon />
               </IconButton>
-              <IconButton onClick={toggleFavorite} color={isFavorite ? 'error' : 'default'}>
+              <IconButton
+                onClick={!user ? () => setSignInModalVariant('features') : toggleFavorite}
+                color={isFavorite ? 'error' : 'default'}
+                sx={!user ? { opacity: 0.6 } : {}}
+              >
                 {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
               </IconButton>
             </Box>
@@ -319,6 +386,13 @@ export function QuizPage() {
         questionId={currentQuestion?.id}
         onReport={handleReport}
       />
+      {signInModalVariant && (
+        <SignInPromptModal
+          open={!!signInModalVariant}
+          onClose={() => setSignInModalVariant(null)}
+          variant={signInModalVariant}
+        />
+      )}
     </Box>
   )
 }

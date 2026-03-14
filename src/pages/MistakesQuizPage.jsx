@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -15,10 +16,13 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { supabase } from '../lib/supabase'
 import { useMistakes } from '../contexts/MistakesContext'
+import { useAuth } from '../contexts/AuthContext'
 import { ReportQuestionModal } from '../components/ReportQuestionModal'
 
 export function MistakesQuizPage() {
+  const { user } = useAuth()
   const { refreshMistakesCount } = useMistakes()
+  const navigate = useNavigate()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -29,6 +33,13 @@ export function MistakesQuizPage() {
   const [reportModalOpen, setReportModalOpen] = useState(false)
 
   useEffect(() => {
+    if (!user) {
+      navigate('/', { state: { prompt: 'mistakes' }, replace: true })
+    }
+  }, [user, navigate])
+
+  useEffect(() => {
+    if (!user) return
     async function fetchAll() {
       const [favoritesRes, mistakesRes] = await Promise.all([
         supabase.from('favorites').select('question_id'),
@@ -54,7 +65,7 @@ export function MistakesQuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [])
+  }, [user])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -79,15 +90,14 @@ export function MistakesQuizPage() {
     const topicId = q.topic_id
     const isFav = favoriteIds[q.id]
     if (isFav) {
-      await supabase.from('favorites').delete().eq('question_id', q.id)
-      setFavoriteIds((prev) => {
-        const next = { ...prev }
-        delete next[q.id]
-        return next
-      })
+      const prev = { ...favoriteIds }
+      setFavoriteIds((p) => { const next = { ...p }; delete next[q.id]; return next })
+      const { error } = await supabase.from('favorites').delete().eq('question_id', q.id)
+      if (error) setFavoriteIds(prev)
     } else {
-      await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
       setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
+      const { error } = await supabase.from('favorites').insert({ question_id: q.id, topic_id: topicId })
+      if (error) setFavoriteIds((prev) => { const next = { ...prev }; delete next[q.id]; return next })
     }
   }
 
@@ -110,6 +120,14 @@ export function MistakesQuizPage() {
   const answered = allAnswered[currentIndex]
   const currentQuestion = questions[currentIndex]
   const isFavorite = currentQuestion && favoriteIds[currentQuestion.id]
+
+  if (!user) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   if (loading) {
     return (

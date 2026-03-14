@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const from = location.state?.from?.pathname || '/'
 
   async function handleGoogleSignIn() {
@@ -80,9 +81,19 @@ export function LoginPage() {
           disabled={loading}
           onClick={handleGoogleSignIn}
           startIcon={<GoogleIcon />}
-          sx={{ mt: 2, mb: 2, minHeight: 48 }}
+          sx={{ mt: 2, mb: 1, minHeight: 48 }}
         >
           {loading ? 'Signing in...' : 'Sign in with Google'}
+        </Button>
+        <Button
+          fullWidth
+          variant="text"
+          size="large"
+          disabled={loading}
+          onClick={() => navigate(from)}
+          sx={{ mb: 2, minHeight: 48, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+        >
+          Continue as guest
         </Button>
       </Paper>
     </Box>

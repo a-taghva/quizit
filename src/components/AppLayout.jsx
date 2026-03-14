@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import MenuIcon from '@mui/icons-material/Menu'
-import { AppBar, Box, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useMistakes } from '../contexts/MistakesContext'
@@ -61,34 +61,40 @@ export function AppLayout() {
             Plumber Exam
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          {isMainPage ? (
-            <>
-              <IconButton
-                color="inherit"
-                onClick={(e) => setMenuAnchor(e.currentTarget)}
-                aria-label="menu"
-                sx={{ p: 1.25 }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                anchorEl={menuAnchor}
-                open={!!menuAnchor}
-                onClose={() => setMenuAnchor(null)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              >
-                <MenuItem
-                  onClick={handleResetMistakes}
-                  disabled={mistakesCount === 0}
-                  sx={{ color: mistakesCount > 0 ? 'error.main' : 'text.disabled' }}
+          {user ? (
+            isMainPage ? (
+              <>
+                <IconButton
+                  color="inherit"
+                  onClick={(e) => setMenuAnchor(e.currentTarget)}
+                  aria-label="menu"
+                  sx={{ p: 1.25 }}
                 >
-                  Reset mistakes
-                </MenuItem>
-                <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
-              </Menu>
-            </>
-          ) : null}
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={menuAnchor}
+                  open={!!menuAnchor}
+                  onClose={() => setMenuAnchor(null)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                  <MenuItem
+                    onClick={handleResetMistakes}
+                    disabled={mistakesCount === 0}
+                    sx={{ color: mistakesCount > 0 ? 'error.main' : 'text.disabled' }}
+                  >
+                    Reset mistakes
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+                </Menu>
+              </>
+            ) : null
+          ) : (
+            <Button color="inherit" onClick={() => navigate('/login')} sx={{ textTransform: 'none' }}>
+              Sign in
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <Outlet />

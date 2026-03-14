@@ -10,11 +10,15 @@ import {
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { SignInPromptModal } from '../components/SignInPromptModal'
 import { useState, useCallback } from 'react'
 
 export function ResultPage() {
+  const { user } = useAuth()
   const { topicId } = useParams()
   const navigate = useNavigate()
+  const [signInModalOpen, setSignInModalOpen] = useState(false)
   const result = useLocation().state
   const [favoriteIds, setFavoriteIds] = useState(result?.favoriteIds ?? {})
 
@@ -22,15 +26,14 @@ export function ResultPage() {
     async (questionId) => {
       const isFav = favoriteIds[questionId]
       if (isFav) {
-        await supabase.from('favorites').delete().eq('question_id', questionId)
-        setFavoriteIds((prev) => {
-          const next = { ...prev }
-          delete next[questionId]
-          return next
-        })
+        const prev = { ...favoriteIds }
+        setFavoriteIds((p) => { const next = { ...p }; delete next[questionId]; return next })
+        const { error } = await supabase.from('favorites').delete().eq('question_id', questionId)
+        if (error) setFavoriteIds(prev)
       } else {
-        await supabase.from('favorites').insert({ question_id: questionId, topic_id: topicId })
         setFavoriteIds((prev) => ({ ...prev, [questionId]: true }))
+        const { error } = await supabase.from('favorites').insert({ question_id: questionId, topic_id: topicId })
+        if (error) setFavoriteIds((prev) => { const next = { ...prev }; delete next[questionId]; return next })
       }
     },
     [favoriteIds, topicId]
@@ -121,10 +124,10 @@ export function ResultPage() {
                     {m.question}
                   </Typography>
                   <IconButton
-                    onClick={() => toggleFavorite(m.question_id)}
+                    onClick={user ? () => toggleFavorite(m.question_id) : () => setSignInModalOpen(true)}
                     color={favoriteIds[m.question_id] ? 'error' : 'default'}
                     size="small"
-                    sx={{ m: -0.5 }}
+                    sx={{ m: -0.5, ...(!user && { opacity: 0.6 }) }}
                   >
                     {favoriteIds[m.question_id] ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                   </IconButton>
@@ -146,6 +149,13 @@ export function ResultPage() {
             </Card>
           ))}
         </Box>
+      )}
+      {signInModalOpen && (
+        <SignInPromptModal
+          open={signInModalOpen}
+          onClose={() => setSignInModalOpen(false)}
+          variant="features"
+        />
       )}
     </Box>
   )

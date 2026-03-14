@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -14,9 +15,12 @@ import FlagIcon from '@mui/icons-material/Flag'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 import { ReportQuestionModal } from '../components/ReportQuestionModal'
 
 export function FavoritesQuizPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const navRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
@@ -27,6 +31,13 @@ export function FavoritesQuizPage() {
   const [reportModalOpen, setReportModalOpen] = useState(false)
 
   useEffect(() => {
+    if (!user) {
+      navigate('/', { state: { prompt: 'favorites' }, replace: true })
+    }
+  }, [user, navigate])
+
+  useEffect(() => {
+    if (!user) return
     async function fetchAll() {
       const { data, error } = await supabase
         .from('favorites')
@@ -51,7 +62,7 @@ export function FavoritesQuizPage() {
       setLoading(false)
     }
     fetchAll()
-  }, [])
+  }, [user])
 
   const combinedMistakes = { ...sessionMistakes }
   const allAnswered = { ...combinedMistakes, ...sessionAnswered }
@@ -75,13 +86,14 @@ export function FavoritesQuizPage() {
     if (!q) return
     const isFav = favoriteIds[q.id]
     if (isFav) {
-      await supabase.from('favorites').delete().eq('question_id', q.id)
-      setFavoriteIds((prev) => { const next = { ...prev }; delete next[q.id]; return next })
-    } else {
-      if (q.topic_id) {
-        await supabase.from('favorites').insert({ question_id: q.id, topic_id: q.topic_id })
-        setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
-      }
+      const prev = { ...favoriteIds }
+      setFavoriteIds((p) => { const next = { ...p }; delete next[q.id]; return next })
+      const { error } = await supabase.from('favorites').delete().eq('question_id', q.id)
+      if (error) setFavoriteIds(prev)
+    } else if (q.topic_id) {
+      setFavoriteIds((prev) => ({ ...prev, [q.id]: true }))
+      const { error } = await supabase.from('favorites').insert({ question_id: q.id, topic_id: q.topic_id })
+      if (error) setFavoriteIds((prev) => { const next = { ...prev }; delete next[q.id]; return next })
     }
   }
 
@@ -101,6 +113,14 @@ export function FavoritesQuizPage() {
   const answered = allAnswered[currentIndex]
   const currentQuestion = questions[currentIndex]
   const isFavorite = currentQuestion && favoriteIds[currentQuestion.id]
+
+  if (!user) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   if (loading) {
     return (
