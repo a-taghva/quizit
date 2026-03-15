@@ -30,6 +30,7 @@ export function QuizPage() {
   const location = useLocation()
   const navRef = useRef(null)
   const [totalQuestions, setTotalQuestions] = useState(location.state?.totalQuestions ?? 10)
+  const [subscriptionStatus, setSubscriptionStatus] = useState('free')
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState([])
   const [favoriteIds, setFavoriteIds] = useState({})
@@ -43,6 +44,7 @@ export function QuizPage() {
   useEffect(() => {
     async function fetchAll() {
       if (!user) {
+        // Guest: always limited to 10 questions
         const [questionsRes, topicRes] = await Promise.all([
           supabase
             .from('questions')
@@ -61,20 +63,59 @@ export function QuizPage() {
           setTotalQuestions(location.state.totalQuestions)
         }
       } else {
-        const [questionsRes, favoritesRes, statusRes] = await Promise.all([
-          supabase.from('questions').select('id, question, options, explanation, answer').eq('topic_id', topicId),
-          supabase.from('favorites').select('question_id').eq('topic_id', topicId),
-          supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle(),
-        ])
-        if (!questionsRes.error) {
-          const q = questionsRes.data ?? []
-          setQuestions(q)
-          const fav = {}
-          ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
-          setFavoriteIds(fav)
-          const statusRow = statusRes.data
-          setStatusIndex(statusRow ? statusRow.question_index : null)
-          setCurrentIndex(statusRow?.question_index ?? 0)
+        // Signed-in: check subscription status first
+        const subRes = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        const status = subRes.data?.status ?? 'free'
+        setSubscriptionStatus(status)
+
+        if (status === 'free') {
+          // Free user: 10-question limit but has access to favorites/mistakes/bookmarks
+          const [questionsRes, favoritesRes, statusRes, topicRes] = await Promise.all([
+            supabase
+              .from('questions')
+              .select('id, question, options, explanation, answer')
+              .eq('topic_id', topicId)
+              .limit(10),
+            supabase.from('favorites').select('question_id').eq('topic_id', topicId),
+            supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle(),
+            supabase.from('topics').select('total_questions').eq('id', topicId).single(),
+          ])
+          if (!questionsRes.error) {
+            const q = questionsRes.data ?? []
+            setQuestions(q)
+            const fav = {}
+            ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
+            setFavoriteIds(fav)
+            const statusRow = statusRes.data
+            setStatusIndex(statusRow ? statusRow.question_index : null)
+            setCurrentIndex(statusRow?.question_index ?? 0)
+          }
+          if (!topicRes.error && topicRes.data?.total_questions != null) {
+            setTotalQuestions(topicRes.data.total_questions)
+          }
+        } else {
+          // Paid user: full question set, no 10-question limit
+          const [questionsRes, favoritesRes, statusRes] = await Promise.all([
+            supabase.from('questions').select('id, question, options, explanation, answer').eq('topic_id', topicId),
+            supabase.from('favorites').select('question_id').eq('topic_id', topicId),
+            supabase.from('status').select('question_index').eq('topic_id', topicId).maybeSingle(),
+          ])
+          if (!questionsRes.error) {
+            const q = questionsRes.data ?? []
+            setQuestions(q)
+            setTotalQuestions(q.length)
+            const fav = {}
+            ;(favoritesRes.data ?? []).forEach((r) => { fav[r.question_id] = true })
+            setFavoriteIds(fav)
+            const statusRow = statusRes.data
+            setStatusIndex(statusRow ? statusRow.question_index : null)
+            setCurrentIndex(statusRow?.question_index ?? 0)
+          }
         }
       }
       setLoading(false)
@@ -257,11 +298,14 @@ export function QuizPage() {
             {i + 1}
           </Box>
         ))}
-        {!user && totalQuestions > 10 && Array.from({ length: totalQuestions - 10 }, (_, i) => i + 10).map((i) => (
+        {( !user || subscriptionStatus === 'free') && totalQuestions > 10 &&
+          Array.from({ length: totalQuestions - 10 }, (_, i) => i + 10).map((i) => (
           <Box
             key={`locked-${i}`}
             data-index={i}
-            onClick={() => setSignInModalVariant('all-questions')}
+            onClick={() =>
+              setSignInModalVariant(user ? 'all-questions-subscribe' : 'all-questions-guest')
+            }
             sx={{
               flexShrink: 0,
               width: 44,
@@ -391,6 +435,8 @@ export function QuizPage() {
           open={!!signInModalVariant}
           onClose={() => setSignInModalVariant(null)}
           variant={signInModalVariant}
+          primaryLabel={signInModalVariant === 'all-questions-subscribe' ? 'Subscribe' : undefined}
+          primaryPath={signInModalVariant === 'all-questions-subscribe' ? '/pricing' : undefined}
         />
       )}
     </Box>

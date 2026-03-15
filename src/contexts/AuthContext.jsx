@@ -28,6 +28,19 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Ensure a subscriptions row exists for signed-in users (status 'free' by default).
+  useEffect(() => {
+    async function ensureSubscription() {
+      if (!user) return
+      try {
+        await supabase.rpc('init_subscription', { p_user_id: user.id })
+      } catch {
+        // Ignore errors for now; user remains effectively free without a row.
+      }
+    }
+    ensureSubscription()
+  }, [user])
+
   const value = useMemo(
     () => ({
       user,

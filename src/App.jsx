@@ -9,6 +9,8 @@ import { FavoritesQuizPage } from './pages/FavoritesQuizPage'
 import { MistakesQuizPage } from './pages/MistakesQuizPage'
 import { QuizPage } from './pages/QuizPage'
 import { ResultPage } from './pages/ResultPage'
+import { PricingPage } from './pages/PricingPage'
+import { PricingSuccessPage } from './pages/PricingSuccessPage'
 const theme = createTheme({
   palette: {
     primary: { main: '#0f172a' },
@@ -43,6 +45,8 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<Navigate to="/login" replace />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/pricing/success" element={<PricingSuccessPage />} />
             <Route element={<ProtectedRoute><MistakesProvider><AppLayout /></MistakesProvider></ProtectedRoute>}>
               <Route path="/" element={<BookPage />} />
               <Route path="/favorites" element={<FavoritesQuizPage />} />

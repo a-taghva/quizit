@@ -8,18 +8,30 @@ import {
 } from '@mui/material'
 
 const MESSAGES = {
-  'all-questions': 'You need to sign in & subscribe to access to all questions',
-  features: 'To unlock these features you need to sign in',
-  progress: 'Your progress will be lost unless you sign in',
+  'all-questions-guest': 'You need to sign in & subscribe to access all questions.',
+  'all-questions-subscribe': 'You need to subscribe to access all questions.',
+  features: 'To unlock these features you need to sign in.',
+  progress: 'Your progress will be lost unless you sign in.',
 }
 
-export function SignInPromptModal({ open, onClose, onOk, variant = 'features' }) {
+export function SignInPromptModal({
+  open,
+  onClose,
+  onOk,
+  variant = 'features',
+  primaryLabel,
+  primaryPath,
+}) {
   const navigate = useNavigate()
   const message = MESSAGES[variant] ?? MESSAGES.features
 
-  const handleSignIn = () => {
+  const handlePrimary = () => {
     onClose()
-    navigate('/login')
+    if (primaryPath) {
+      navigate(primaryPath)
+    } else {
+      navigate('/login')
+    }
   }
 
   const handleOk = () => {
@@ -28,6 +40,7 @@ export function SignInPromptModal({ open, onClose, onOk, variant = 'features' })
   }
 
   const isProgress = variant === 'progress'
+  const effectivePrimaryLabel = primaryLabel ?? 'Sign in'
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -37,8 +50,8 @@ export function SignInPromptModal({ open, onClose, onOk, variant = 'features' })
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={isProgress ? handleOk : onClose}>{isProgress ? 'OK' : 'Cancel'}</Button>
-        <Button variant="contained" onClick={handleSignIn}>
-          Sign in
+        <Button variant="contained" onClick={handlePrimary}>
+          {effectivePrimaryLabel}
         </Button>
       </DialogActions>
     </Dialog>
