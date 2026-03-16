@@ -40,11 +40,14 @@ export function SignInPromptModal({
   }
 
   const isProgress = variant === 'progress'
-  const effectivePrimaryLabel = primaryLabel ?? 'Sign in'
+  const isSubscribeVariant = variant === 'all-questions-subscribe'
+  const effectivePrimaryLabel = primaryLabel ?? (isSubscribeVariant ? 'Subscribe' : 'Sign in')
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isProgress ? '' : 'Sign in required'}</DialogTitle>
+      <DialogTitle>
+        {isProgress ? '' : isSubscribeVariant ? 'Subscription required' : 'Sign in required'}
+      </DialogTitle>
       <DialogContent>
         {message}
       </DialogContent>

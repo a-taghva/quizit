@@ -54,6 +54,14 @@ export function PricingPage() {
         Unlock +100 questions with any plan.
       </Typography>
 
+      <Button
+        variant="text"
+        onClick={() => navigate('/')}
+        sx={{ mb: 3, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+      >
+        Back to home
+      </Button>
+
       <Box
         sx={{
           display: 'flex',
