@@ -1,5 +1,6 @@
 import { Box, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const PLANS = [
   {
@@ -30,8 +31,13 @@ const PLANS = [
 
 export function PricingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const handleSubscribeClick = (planId) => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/pricing' } } })
+      return
+    }
     // Stripe checkout will be wired here later using the plan's stripePriceId.
     navigate('/pricing/success')
   }
@@ -95,7 +101,7 @@ export function PricingPage() {
                   variant="contained"
                   onClick={() => handleSubscribeClick(plan.id)}
                 >
-                  Subscribe
+                  {user ? 'Subscribe' : 'Sign in'}
                 </Button>
               </CardActions>
             </Card>
