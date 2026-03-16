@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardActions, Button, Typography, Grid } from '@mui/material'
+import { Box, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 const PLANS = [
@@ -23,7 +23,7 @@ const PLANS = [
   {
     id: 'lifetime',
     name: 'Lifetime',
-    priceText: '$99 CAD one-time',
+    priceText: '$120 CAD one-time',
     stripePriceId: 'price_1TBFpIASpaiyAE8I1CuV5k8i',
   },
 ]
@@ -42,6 +42,9 @@ export function PricingPage() {
         p: { xs: 2, sm: 3 },
         maxWidth: 960,
         mx: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
       <Typography variant="h4" component="h1" align="center" sx={{ mb: 3 }}>
@@ -51,10 +54,24 @@ export function PricingPage() {
         Unlock +100 questions with any plan.
       </Typography>
 
-      <Grid container spacing={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 2,
+          width: '100%',
+        }}
+      >
         {PLANS.map((plan) => (
-          <Grid item xs={12} sm={6} md={3} key={plan.id}>
-            <Card>
+          <Box
+            key={plan.id}
+            sx={{
+              flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 16px)', md: '1 1 calc(25% - 16px)' },
+              maxWidth: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(25% - 16px)' },
+            }}
+          >
+            <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
                   {plan.name}
@@ -74,9 +91,9 @@ export function PricingPage() {
                 </Button>
               </CardActions>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   )
 }
